@@ -1,3 +1,4 @@
+//Cesar Sepulveda
 #include "book.h"
 #include <string>
 
@@ -8,6 +9,13 @@ Book::Book(){
   title = " ";
   author = " ";
   category = " ";
+  checked = false;
+}
+Book::Book(int id, string t, string a, string c){
+  bookID = id;
+  title = t;
+  author = a;
+  category = c;
 }
 int Book::getBookID(){
   return bookID;
@@ -32,4 +40,10 @@ string Book::getCategory(){
 }
 void Book::setCategory(string c){
   category = c;
+}
+void Book::setChecked(bool c){
+    checked = c;
+}
+bool Book::getChecked(){
+    return checked;
 }
