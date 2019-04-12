@@ -19,7 +19,27 @@ void printmenu() {
     cout << "8. Close program" << endl;
   }
 
-vector<Book *>readBookFile(vector<Book *> bookVec, string fileName){
+int findPerson(int id, vector<Person *> perVec){
+  int found = -1;
+  for(int i = 0; i < perVec.size(); ++i){
+      if(perVec.at(i)->getCardID() == id){
+         found = i;
+      }
+  }
+  return found;
+}
+
+int findBook(int id, vector<Book *> bookVec){
+  int found = -1;
+  for(int i = 0; i < bookVec.size(); ++i){
+      if(bookVec.at(i)->getBookID() == id){
+         found = i;
+      }
+  }
+  return found;
+}
+
+vector<Book *> readBookFile(vector<Book *> bookVec, string fileName){
   fstream myFile;
   myFile.open(fileName);
   int bookID;
@@ -60,35 +80,29 @@ vector<Person *> readPersonFile(vector<Person *> perVec, string fileName){
   return perVec;
 }
 
-void bookCheckout(vector<Book *> bookVec, vector<Person *> perVec, int ID){
+void bookCheckout(vector<Book *> bookVec, vector<Person *> perVec, int id){
     int bookID;
-    int person = -1;
+    int person = findPerson(id,perVec);
     int book = -1;
-    for(int i; i < perVec.size(); ++i){
-        if(perVec.at(i)->getCardID() == ID){
-           person = i;
-        }
-    }
     if(person  == -1){
         cout << "Card ID not found" << endl;
         return;
+    }else if(perVec.at(person)->getActive() == false){
+      cout << "Card ID is inactive" << endl;
+      return;
     }
     cout << "Cardholder: " << perVec.at(person)->getFirstName() << " " << perVec.at(person)->getLastName() << endl;
     cout << "Please enter the book ID: ";
     cin >> bookID;
-    for(int j; j < bookVec.size(); ++j){
-        if(bookVec.at(j)->getBookID() == bookID){
-           book = j;
-        }
-    }
-    if(book = -1){
+    book = findBook(bookID, bookVec);
+    if(book == -1){
         cout << "Book ID not found" << endl;
         return;
     }
     cout << "Title: " << bookVec.at(book)->getTitle() << endl;
     if(bookVec.at(book)->getChecked() == false){
         bookVec.at(book)->setChecked(true);
-        perVec.at(person)->addBook(bookVec.at(book));
+        bookVec.at(book)->setRenterID(perVec.at(person)->getCardID());
         cout << "Rental Completed" << endl;
     }else{
         cout << "Book already checked out" << endl;
@@ -96,17 +110,13 @@ void bookCheckout(vector<Book *> bookVec, vector<Person *> perVec, int ID){
 }
 
 void bookReturn(vector<Book *> bookVec, int bookID){
-    int book = -1;
-    for(int i = 0; i < bookVec.size(); ++i){
-        if(bookVec.at(i)->getBookID() == bookID){
-           book = i;
-        }
-    }
+    int book = findBook(bookID, bookVec);
     if(book == -1){
         cout << "Book ID not found" << endl;
         return;
     }
     bookVec.at(book)->setChecked(false);
+    bookVec.at(book)->setRenterID(-1);
     cout << "Title: " << bookVec.at(book)->getTitle() << endl;
     cout << "Return Completed" << endl;
 
@@ -120,6 +130,7 @@ void availableBooks(vector<Book *> bookVec){
             cout << "Title: " << bookVec.at(i)->getTitle() << endl;
             cout << "Author: " << bookVec.at(i)->getAuthor() << endl;
             cout << "Category: " << bookVec.at(i)->getCategory() << endl;
+            cout << endl;
             ++count;
         }
     }
@@ -128,35 +139,45 @@ void availableBooks(vector<Book *> bookVec){
     }
 }
 
-void outstandingRentals(vector<Person *> perVec){
-    int count = 0;
-    for(int i = 0; i < perVec.size(); ++i){
-            perVec.at(i)->checkout(false);
-            if(perVec.at(i)->checkedSize() > 0){
-                count = perVec.at(i)->checkedSize();
-            }
+void outstandingRentals(vector<Book *> bookVec, vector <Person*> perVec){
+    int found = -1;
+    for(int i = 0; i < bookVec.size(); ++i){
+      if(bookVec.at(i)->getChecked() == true){
+        found = findPerson(bookVec.at(i)->getRenterID(), perVec);
+        cout << "Book ID: " << bookVec.at(i)->getBookID() << endl;
+        cout << "Title: " << bookVec.at(i)->getTitle() << endl;
+        cout << "Author: " << bookVec.at(i)->getAuthor() << endl;
+        cout << "Cardholder: " << perVec.at(found)->getFirstName() << " " << perVec.at(found)->getLastName() << endl;
+        cout << "Card ID: " << bookVec.at(i)->getRenterID() << endl;
+      }
     }
-    if(count == 0){
+    if(found == -1){
         cout << "No outstanding rentals" << endl;
     }
 }
 
-void cardholderRentals(vector<Person *> perVec, int cardID){
-  int cardholder = 0;
-  for(int i = 0; i < perVec.size(); ++i){
-    if(perVec.at(i)->getCardID() == cardID){
-      cardholder = cardID;
-    }
-  }
-  if(cardholder == 0){
+void cardholderRentals(vector<Person *> perVec, int cardID, vector<Book *> bookVec){
+  int cardholder = findPerson(cardID, perVec);
+  int count = 0;
+  if(cardholder == -1){
     cout << "Card ID not found" << endl;
     return;
+  }else if(perVec.at(cardholder)->getActive() == false){
+    cout << "Card ID is inactive" << endl;
+    return;
   }else{
-    if(perVec.at(cardholder)->checkedSize() == 0){
-      cout << "No outstanding rentals" << endl;
-      return;
-    }else{
-      perVec.at(cardholder)->checkout(true);
+    cout << "Card ID: " << perVec.at(cardholder)->getCardID() << endl;
+    cout << "Cardholder: " << perVec.at(cardholder)->getFirstName() << " " << perVec.at(cardholder)->getLastName() << endl;
+    for(int i = 0; i < bookVec.size(); ++i){
+      if(bookVec.at(i)->getRenterID() == cardID){
+        cout << "Book Id: " << bookVec.at(i)->getBookID() << endl;
+        cout << "Title: " << bookVec.at(i)->getTitle() << endl;
+        cout << "Author: " << bookVec.at(i)->getAuthor() << endl;
+        ++count;
+      }
+    }
+    if(count == 0){
+      cout << "No oustanding rentals" << endl;
     }
   }
 }
@@ -171,27 +192,24 @@ int findLargest(vector<Person *> perVec){
   return largest;
 }
 
-void newLibraryCard(vector<Person *> perVec){
-  int count = 0;
-  for(int i = 0; i < perVec.size(); ++i){
-    count = i;
-  }
+vector<Person *> newLibraryCard(vector<Person *> perVec){
   Person *temp;
   string fname;
   string lname;
-  perVec.push_back(temp);
   cout << "Please enter the first name: ";
   cin >> fname;
   cout << endl;
   cout << "Please enter the last name: ";
   cin >> lname;
   cout << endl;
-  perVec.at(count+1)->setFirstName(fname);
-  perVec.at(count+1)->setLastName(lname);
-  perVec.at(count+1)->setCardID(findLargest(perVec)+1);
-  perVec.at(count+1)->setActive(true);
-  cout << "Card ID " << perVec.at(count+1)->getCardID() << " active" << endl;
-  cout << "Cardholder: " << perVec.at(count+1)->getFirstName() << " " << perVec.at(count+1)->getLastName() << endl;
+  perVec.push_back(new Person);
+  perVec.at(perVec.size()-1)->setFirstName(fname);
+  perVec.at(perVec.size()-1)->setLastName(lname);
+  perVec.at(perVec.size()-1)->setCardID(findLargest(perVec)+1);
+  perVec.at(perVec.size()-1)->setActive(true);
+  cout << "Card ID " << perVec.at(perVec.size()-1)->getCardID() << " active" << endl;
+  cout << "Cardholder: " << perVec.at(perVec.size()-1)->getFirstName() << " " << perVec.at(perVec.size()-1)->getLastName() << endl;
+  return perVec;
 }
 
 void closeLibraryCard(vector<Person *> perVec, int cardID){
@@ -220,23 +238,15 @@ void closeLibraryCard(vector<Person *> perVec, int cardID){
   }
 }
 
-void displayBooks(vector<Book *> bookVec){
-  cout << bookVec.size() << endl;
+void writeData(vector<Book *> bookVec, string fileName){
+  fstream myFile;
+  myFile.open(fileName);
   for(int i = 0; i < bookVec.size(); ++i){
-    cout << "Book ID: " << bookVec.at(i)->getBookID() << endl;
-    cout << "Title: " << bookVec.at(i)->getTitle() << endl;
-    cout << "Author: " << bookVec.at(i)->getAuthor() << endl;
-    cout << "Category: " << bookVec.at(i)->getCategory() << endl;
-    cout << "checked: " << bookVec.at(i)->getChecked() << endl;
+    if(bookVec.at(i)->getChecked() == true){
+      myFile << bookVec.at(i)->getBookID() << " " << bookVec.at(i)->getRenterID() << endl;
+    }
   }
-}
-
-void displayCardholders(vector<Person *> perVec){
-  for(int i = 0; i < perVec.size(); ++i){
-    cout << "Card ID: " << perVec.at(i)->getCardID() << endl;
-    cout << "Active: " << perVec.at(i)->getActive() << endl;
-    cout << "Name: " << perVec.at(i)->getFirstName() << " " << perVec.at(i)->getLastName() << endl;
-  }
+  myFile.close();
 }
 
 int main(){
@@ -267,16 +277,16 @@ int main(){
         availableBooks(books);
         break;
       case 4:
-        outstandingRentals(cardholders);
+        outstandingRentals(books, cardholders);
         break;
       case 5:
         cout << "Please enter the card ID: ";
         cin >> cardID;
         cout << endl;
-        cardholderRentals(cardholders, cardID);
+        cardholderRentals(cardholders, cardID, books);
         break;
       case 6:
-        newLibraryCard(cardholders);
+        cardholders = newLibraryCard(cardholders);
         break;
       case 7:
         cout << "Please enter the card ID: ";
@@ -286,6 +296,7 @@ int main(){
         break;
       case 8:
         cout << "Exiting program..." << endl;
+        writeData(books, "Rentals.txt");
         break;
       default:
         cout << "Invalid entry" << endl;
@@ -299,6 +310,6 @@ int main(){
   for(int i = 0; i < cardholders.size(); ++i){
     delete cardholders.at(i);
   }
-
   return 0;
 }
+
