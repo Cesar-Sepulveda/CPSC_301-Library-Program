@@ -42,23 +42,4 @@ string Person::getLastName(){
 void Person::setLastName(string lName){
   lastName = lName;
 }
-void Person::addBook(Book *b){
-    checked.push_back(b);
-}
-void Person::checkout(bool user){
-    if(checked.size() > 0){
-        for(int i = 0; i < checked.size(); ++i){
-            cout << "Book ID : " << checked.at(i)->getBookID() << endl;
-            cout << "Title: " << checked.at(i)->getTitle() << endl;
-            cout << "Author: " << checked.at(i)->getAuthor() << endl;
-            if(user == false){
-              cout << "Cardholder: " << getFirstName() << " " << getLastName();
-              cout << "Card ID: " << getCardID() << endl;
-            }
-        }
-    }
-}
 
-int Person::checkedSize(){
-    return checked.size();
-}
