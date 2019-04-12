@@ -12,6 +12,7 @@ class Book{
     string author;
     string category;
     bool checked = false;
+    int renterID = -1;
   public:
     Book();
     Book(int id, string t, string a, string c);
@@ -25,5 +26,7 @@ class Book{
     void setCategory(string c);
     void setChecked(bool c);
     bool getChecked();
+    void setRenterID(int id);
+    int getRenterID();
 };
 #endif
