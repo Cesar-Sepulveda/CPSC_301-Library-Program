@@ -47,3 +47,9 @@ void Book::setChecked(bool c){
 bool Book::getChecked(){
     return checked;
 }
+void Book::setRenterID(int id){
+  renterID = id;
+}
+int Book::getRenterID(){
+  return renterID;
+}
