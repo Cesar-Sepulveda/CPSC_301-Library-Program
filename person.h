@@ -13,7 +13,6 @@ class Person{
     bool active;
     string firstName;
     string lastName;
-    vector<Book *> checked;
   public:
     Person();
     Person(int id, bool act, string fn, string ln);
@@ -25,8 +24,5 @@ class Person{
     void setFirstName(string fName);
     string getLastName();
     void setLastName(string lName);
-    void addBook(Book *b);
-    void checkout(bool user);
-    int checkedSize();
 };
 #endif
