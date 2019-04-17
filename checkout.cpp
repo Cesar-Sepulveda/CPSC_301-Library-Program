@@ -306,10 +306,11 @@ int main(){
   }while(choice != 8);
   for(int i = 0; i < books.size(); ++i){
     delete books.at(i);
+    books.at(i) = nullptr;
   }
   for(int i = 0; i < cardholders.size(); ++i){
     delete cardholders.at(i);
+    books.at(i) = nullptr;
   }
   return 0;
 }
-
